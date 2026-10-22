@@ -30,7 +30,7 @@ linear-gradient(90deg,rgba(255,255,255,.75),rgba(255,255,255,0) 7%)}
 #head img{position:absolute;left:49px;top:26px;width:425px;height:auto;display:block}
 #panel{position:absolute;left:545px;top:168px;width:512px;height:872px;border-radius:26px;border:1.5px solid rgba(255,255,255,.38);
 background-color:#4a505c;background-size:1080px 1080px;background-position:-545px -168px;box-shadow:0 18px 50px rgba(0,0,0,.28);overflow:hidden}
-#panel::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(78,84,96,.62),rgba(34,40,52,.66))}
+#panel::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--tA,rgba(78,84,96,.62)),var(--tB,rgba(34,40,52,.66)))}
 #pin{position:relative;display:flex;flex-direction:column;width:512px;height:872px;transform-origin:0 0;padding:52px 30px 30px 30px}
 .t1{font-size:26px;font-weight:400;letter-spacing:6.2px;line-height:1;white-space:nowrap;text-shadow:0 2px 6px rgba(0,0,0,.35)}
 .t2{font-size:62px;font-weight:800;line-height:1.1;white-space:nowrap;margin-top:12px;text-shadow:0 3px 10px rgba(0,0,0,.4);letter-spacing:-.5px}
@@ -39,15 +39,15 @@ background-color:#4a505c;background-size:1080px 1080px;background-position:-545p
 .gold-line{height:3px;background:var(--accent);margin-top:18px;border-radius:2px}
 .rows{flex:1;display:flex;flex-direction:column;justify-content:space-around;padding:6px 0}
 .row{display:flex;align-items:center;gap:30px}
-.ico{flex:none;width:66px;height:66px;border:2.5px solid var(--accent);border-radius:15px;background:rgba(14,26,48,.55);display:flex;align-items:center;justify-content:center}
+.ico{flex:none;width:66px;height:66px;border:2.5px solid var(--accent);border-radius:15px;background:var(--icobg,rgba(14,26,48,.55));display:flex;align-items:center;justify-content:center}
 .ico svg{width:38px;height:38px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .rt{font-size:28px;font-weight:700;letter-spacing:.3px;white-space:nowrap;text-shadow:0 2px 6px rgba(0,0,0,.4)}
 .rt.big{font-size:36px;line-height:1}
 .rs{font-size:19px;font-weight:500;letter-spacing:.5px;opacity:.92;margin-top:2px;white-space:nowrap}
-.price{height:84px;border-radius:26px;background:linear-gradient(180deg,#fbcd4e,#eeab26);color:#0c1a36;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:800;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.3);margin-top:8px;padding:0 14px}
-.condo{height:52px;border-radius:26px;background:rgba(10,22,44,.9);border:1.2px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;gap:22px;font-size:23px;font-weight:500;margin-top:16px;white-space:nowrap}
+.price{height:84px;border-radius:26px;background:linear-gradient(180deg,var(--a2,#fbcd4e),var(--a3,#eeab26));color:var(--nv3,#0c1a36);display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:800;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.3);margin-top:8px;padding:0 14px}
+.condo{height:52px;border-radius:26px;background:var(--pill,rgba(10,22,44,.9));border:1.2px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;gap:22px;font-size:23px;font-weight:500;margin-top:16px;white-space:nowrap}
 .condo svg{width:32px;height:32px;fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.cta{height:92px;border-radius:36px;background:rgba(10,22,44,.92);border:2.5px solid var(--accent);display:flex;align-items:center;justify-content:center;gap:26px;margin:16px 20px 0 20px}
+.cta{height:92px;border-radius:36px;background:var(--pill,rgba(10,22,44,.92));border:2.5px solid var(--accent);display:flex;align-items:center;justify-content:center;gap:26px;margin:16px 20px 0 20px}
 .cta svg{width:56px;height:56px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .cta .a{font-size:23px;font-weight:400;letter-spacing:.5px;white-space:nowrap}
 .cta .b{font-size:29px;font-weight:700;white-space:nowrap}
@@ -65,6 +65,10 @@ background-color:#4a505c;background-size:1080px 1080px;background-position:-545p
 .xi input[type=text]{flex:1;min-width:0;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
 .xi button{padding:6px 10px;font-size:16px;line-height:1}
 .add{width:100%;margin-top:2px}
+.sws{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.sw{width:38px;height:38px;border-radius:50%;padding:0;border:2px solid var(--line);cursor:pointer}
+.sw[aria-pressed=true]{outline:3px solid var(--ink);outline-offset:2px}
+.f input[type=color]{width:46px;height:34px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer}
 /* ---------- EDITOR ---------- */
 .editor{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
 .editor h1{font-size:17px;margin:0 0 4px;font-weight:700}
@@ -95,7 +99,7 @@ button.main{background:var(--accent);border-color:var(--accent);color:#0c1a36;fl
  <div id="panel"><div id="pin">
   <div class="t1" data-t="tipo">APARTAMENTO À VENDA</div>
   <div class="t2" data-t="bairro" data-fit="458">JD. PAULISTANO</div>
-  <div class="loc"><svg width="40" height="46" viewBox="0 0 24 28"><path d="M12 27S2 17.5 2 10.5a10 10 0 0 1 20 0C22 17.5 12 27 12 27Z" fill="#f4b631"/><circle cx="12" cy="10.5" r="4" fill="#5a4a22"/></svg><span data-t="cidade">Ribeirão Preto - SP</span></div>
+  <div class="loc"><svg width="40" height="46" viewBox="0 0 24 28"><path d="M12 27S2 17.5 2 10.5a10 10 0 0 1 20 0C22 17.5 12 27 12 27Z" style="fill:var(--accent)"/><circle cx="12" cy="10.5" r="4" fill="rgba(0,0,0,.45)"/></svg><span data-t="cidade">Ribeirão Preto - SP</span></div>
   <div class="gold-line"></div>
   <div class="rows">
    <div class="row" data-r="area"><div class="ico"><svg viewBox="0 0 40 40"><rect x="5" y="5" width="30" height="30" rx="3"/><path d="M10 15V9M7 12l3-3 3 3"/><text x="22" y="29" font-size="12" fill="#fff" stroke="none" font-family="Montserrat" font-weight="500" text-anchor="middle">m²</text></svg></div><div><div class="rt big" data-t="area">45 m²</div><div class="rs" data-t="arealabel">ÁREA PRIVATIVA</div></div></div>
@@ -118,6 +122,11 @@ button.main{background:var(--accent);border-color:var(--accent);color:#0c1a36;fl
  <fieldset><legend>Formato de saída</legend>
   <div class="f"><label for="fmt">Formato</label><select id="fmt"><option value="feed">Feed quadrado · 1080 × 1080</option><option value="retrato">Feed retrato 4:5 · 1080 × 1350</option><option value="story">Story / Reels 9:16 · 1080 × 1920</option></select></div>
   <p class="s" id="fmtnote" style="margin:0 0 6px"></p>
+ </fieldset>
+ <fieldset><legend>Cores</legend>
+  <div class="sws" id="sws" role="group" aria-label="Paletas"></div>
+  <div class="f"><label for="ca">Destaque</label><input type="color" id="ca" value="#f4b631"></div>
+  <div class="f"><label for="cn">Fundo escuro</label><input type="color" id="cn" value="#0b1f35"></div>
  </fieldset>
  <fieldset><legend>Tamanho e posição dos boxes</legend>
   <div class="f"><label for="pw">Painel: largura</label><input id="pw" type="range" min="360" max="1040" value="512"></div>
@@ -278,6 +287,45 @@ function setFormat(k){
 $('#fmt').addEventListener('change',e=>setFormat(e.target.value));
 $('#rst').addEventListener('click',()=>setFormat($('#fmt').value));
 setFormat('feed');
+const LOGO0=$('#head img').src, NAVY0='#0b1f35', ACC0='#f4b631';
+const hex=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16));
+const mix=(x,y,k)=>x.map((v,i)=>Math.round(v*(1-k)+y[i]*k));
+const rgb=c=>'rgb('+c.join(',')+')', rgba=(c,a)=>'rgba('+c.join(',')+','+a+')';
+function recolorLogo(A,N,classic){
+  const el=$('#head img');
+  if(classic){el.src=LOGO0;return}
+  const i=new Image(); i.onload=()=>{
+    const c=document.createElement('canvas'); c.width=i.naturalWidth; c.height=i.naturalHeight;
+    const x=c.getContext('2d'); x.drawImage(i,0,0);
+    const d=x.getImageData(0,0,c.width,c.height), p=d.data;
+    for(let k=0;k<p.length;k+=4){
+      const r=p[k],g=p[k+1],b=p[k+2];
+      const gs=Math.min(1,Math.max(0,(r-b)/195));
+      const w=Math.min(1,Math.max(0,(Math.min(r,g,b)-11)/244));
+      for(let j=0;j<3;j++){ const base=N[j]*(1-w)+255*w; p[k+j]=Math.round(gs*A[j]+(1-gs)*base) }
+      p[k+3]=255;
+    }
+    x.putImageData(d,0,0); el.src=c.toDataURL('image/png');
+  }; i.src=LOGO0;
+}
+function applyTheme(a,n){
+  const A=hex(a),N=hex(n),Wh=[255,255,255],K=[0,0,0],s=stage.style;
+  const classic=(a.toLowerCase()===ACC0&&n.toLowerCase()===NAVY0);
+  s.setProperty('--accent',a); s.setProperty('--navy',n);
+  s.setProperty('--a2',classic?'#fbcd4e':rgb(mix(A,Wh,.22))); s.setProperty('--a3',classic?'#eeab26':rgb(mix(A,K,.1)));
+  s.setProperty('--nv3',classic?'#0c1a36':rgb(mix(N,K,.1)));
+  s.setProperty('--pill',classic?'rgba(10,22,44,.9)':rgba(mix(N,K,.25),.9));
+  s.setProperty('--icobg',classic?'rgba(14,26,48,.55)':rgba(mix(N,K,.1),.55));
+  s.setProperty('--tA',classic?'rgba(78,84,96,.62)':rgba(mix(N,[154,163,178],.45),.62));
+  s.setProperty('--tB',classic?'rgba(34,40,52,.66)':rgba(mix(N,[107,114,128],.25),.66));
+  $('#ca').value=a; $('#cn').value=n; recolorLogo(A,N,classic);
+  $$('.sw').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===a.toLowerCase()&&b.dataset.n===n.toLowerCase())));
+}
+const THEMES=[['Clássico dourado',ACC0,NAVY0],['Esmeralda','#4cd98a','#0a2a22'],['Azul céu','#5ec8ff','#0a1f4d'],['Coral','#ff6b5e','#2b0f16'],['Violeta','#ff7ad9','#25103f'],['Grafite laranja','#ff8a1f','#1b1c20'],['Vinho dourado','#f4b631','#4a0f24'],['Petróleo menta','#7ff0d0','#0b3140']];
+THEMES.forEach(([nm,a,n])=>{const b=document.createElement('button'); b.type='button'; b.className='sw'; b.title=nm; b.setAttribute('aria-label',nm); b.dataset.a=a.toLowerCase(); b.dataset.n=n.toLowerCase();
+  b.style.background='linear-gradient(135deg,'+n+' 50%,'+a+' 50%)'; b.onclick=()=>applyTheme(a,n); $('#sws').append(b)});
+['ca','cn'].forEach(id=>$('#'+id).addEventListener('input',()=>applyTheme($('#ca').value,$('#cn').value)));
+applyTheme(ACC0,NAVY0);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(sync);
 sync();
 </script>
