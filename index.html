@@ -26,7 +26,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:Montserrat,syste
 radial-gradient(ellipse 62% 26% at 18% 0%,rgba(255,255,255,.96),rgba(255,255,255,0) 100%),
 radial-gradient(ellipse 48% 20% at 14% 100%,rgba(255,255,255,.92),rgba(255,255,255,0) 100%),
 linear-gradient(90deg,rgba(255,255,255,.75),rgba(255,255,255,0) 7%)}
-#head{transform-origin:0 0;position:absolute;left:573px;top:34px;width:484px;height:130px;background:var(--navy);border-radius:26px 26px 8px 8px;border:1.5px solid rgba(255,255,255,.28);box-shadow:0 10px 30px rgba(0,0,0,.25)}
+#head{transform-origin:0 0;position:absolute;left:573px;top:34px;width:484px;height:130px;background:var(--hd,var(--navy));border-radius:26px 26px 8px 8px;border:1.5px solid rgba(255,255,255,.28);box-shadow:0 10px 30px rgba(0,0,0,.25)}
 #head img{position:absolute;left:49px;top:26px;width:425px;height:auto;display:block}
 #panel{position:absolute;left:545px;top:168px;width:512px;height:872px;border-radius:26px;border:1.5px solid rgba(255,255,255,.38);
 background-color:#4a505c;background-size:1080px 1080px;background-position:-545px -168px;box-shadow:0 18px 50px rgba(0,0,0,.28);overflow:hidden}
@@ -127,6 +127,7 @@ button.main{background:var(--accent);border-color:var(--accent);color:#0c1a36;fl
   <div class="sws" id="sws" role="group" aria-label="Paletas"></div>
   <div class="f"><label for="ca">Destaque</label><input type="color" id="ca" value="#f4b631"></div>
   <div class="f"><label for="cn">Fundo escuro</label><input type="color" id="cn" value="#0b1f35"></div>
+  <div class="f"><input type="checkbox" id="lg" checked><label for="lg" style="width:auto">Mudar a cor do logotipo junto com a paleta</label></div>
  </fieldset>
  <fieldset><legend>Tamanho e posição dos boxes</legend>
   <div class="f"><label for="pw">Painel: largura</label><input id="pw" type="range" min="360" max="1040" value="512"></div>
@@ -318,13 +319,16 @@ function applyTheme(a,n){
   s.setProperty('--icobg',classic?'rgba(14,26,48,.55)':rgba(mix(N,K,.1),.55));
   s.setProperty('--tA',classic?'rgba(78,84,96,.62)':rgba(mix(N,[154,163,178],.45),.62));
   s.setProperty('--tB',classic?'rgba(34,40,52,.66)':rgba(mix(N,[107,114,128],.25),.66));
-  $('#ca').value=a; $('#cn').value=n; recolorLogo(A,N,classic);
+  const lg=$('#lg').checked;
+  s.setProperty('--hd',lg?n:NAVY0);
+  $('#ca').value=a; $('#cn').value=n; recolorLogo(A,N,classic||!lg);
   $$('.sw').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===a.toLowerCase()&&b.dataset.n===n.toLowerCase())));
 }
-const THEMES=[['Clássico dourado',ACC0,NAVY0],['Esmeralda','#4cd98a','#0a2a22'],['Azul céu','#5ec8ff','#0a1f4d'],['Coral','#ff6b5e','#2b0f16'],['Violeta','#ff7ad9','#25103f'],['Grafite laranja','#ff8a1f','#1b1c20'],['Vinho dourado','#f4b631','#4a0f24'],['Petróleo menta','#7ff0d0','#0b3140']];
+const THEMES=[['Clássico dourado',ACC0,NAVY0],['Esmeralda','#4cd98a','#0a2a22'],['Azul céu','#5ec8ff','#0a1f4d'],['Coral','#ff6b5e','#2b0f16'],['Violeta','#ff7ad9','#25103f'],['Grafite laranja','#ff8a1f','#1b1c20'],['Vinho dourado','#f4b631','#4a0f24'],['Petróleo menta','#7ff0d0','#0b3140'],['Azul royal dourado','#f4b631','#0a2a6b'],['Floresta champanhe','#e6c75a','#0d3b2a'],['Preto ciano','#22d3ee','#0e0f12'],['Preto vermelho','#ff3b3b','#121212'],['Roxo amarelo','#ffd23f','#3a1a6e'],['Marinho salmão','#ff8f7a','#10243f'],['Terracota creme','#f2d8b0','#5a2a1c'],['Chumbo lima','#c6f432','#1f2630'],['Bordô rosé','#ffb3c7','#4a0f24'],['Oceano âmbar','#ffd166','#05445e']];
 THEMES.forEach(([nm,a,n])=>{const b=document.createElement('button'); b.type='button'; b.className='sw'; b.title=nm; b.setAttribute('aria-label',nm); b.dataset.a=a.toLowerCase(); b.dataset.n=n.toLowerCase();
   b.style.background='linear-gradient(135deg,'+n+' 50%,'+a+' 50%)'; b.onclick=()=>applyTheme(a,n); $('#sws').append(b)});
 ['ca','cn'].forEach(id=>$('#'+id).addEventListener('input',()=>applyTheme($('#ca').value,$('#cn').value)));
+$('#lg').addEventListener('change',()=>applyTheme($('#ca').value,$('#cn').value));
 applyTheme(ACC0,NAVY0);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(sync);
 sync();
