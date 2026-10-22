@@ -197,9 +197,16 @@ let img=new Image(), photoURL='';
 
 let W=1080,H=1080;
 const mob=matchMedia('(max-width:900px)');
-function scaleStage(){fit.style.maxWidth=Math.max(150,innerHeight*(mob.matches?0.36:0.86)*W/H)+'px';wrap.style.transform='scale('+(fit.clientWidth/W)+')'}
+let vh=innerHeight, vw=innerWidth;
+function scaleStage(){
+  if(innerWidth!==vw){vw=innerWidth;vh=innerHeight}
+  const avail=$('.preview').clientWidth;
+  const w=Math.max(120,Math.min(avail,vh*(mob.matches?0.36:0.86)*W/H));
+  fit.style.maxWidth='none'; fit.style.width=w+'px'; fit.style.height=(w*H/W)+'px';
+  wrap.style.transform='scale('+(w/W)+')';
+}
 addEventListener('resize',scaleStage);
-new ResizeObserver(scaleStage).observe(fit); scaleStage();
+new ResizeObserver(scaleStage).observe($('.preview')); scaleStage();
 
 function fitText(el){
   const max=+el.dataset.fit; if(!el.dataset.base) el.dataset.base=parseFloat(getComputedStyle(el).fontSize);
