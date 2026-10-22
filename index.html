@@ -88,6 +88,23 @@ button.main{background:var(--accent);border-color:var(--accent);color:#0c1a36;fl
 #ov{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:16px;z-index:9}
 #ov img{max-width:100%;max-height:80vh;border-radius:8px}
 #ov span{color:#fff;font-size:14px;text-align:center}
+body{-webkit-text-size-adjust:100%}
+@media (max-width:900px){
+ .app{display:block;padding:0 12px 24px}
+ .preview{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0}
+ .fit{box-shadow:0 4px 14px rgba(0,0,0,.25)}
+ .editor{padding:14px;margin-top:10px}
+ .btns.sticky{position:sticky;bottom:0;z-index:4;background:var(--surface);margin:0;padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px))}
+}
+@media (pointer:coarse){
+ .f input[type=text],.f select,.xi input[type=text],.xi select{font-size:16px;min-height:44px}
+ button{min-height:44px;font-size:15px}
+ .sw{width:44px;height:44px}
+ .f input[type=checkbox]{width:24px;height:24px}
+ .f input[type=range]{height:32px}
+ .f input[type=color]{width:56px;height:44px}
+ .f label{font-size:14px}
+}
 </style>
 </head>
 <body>
@@ -166,7 +183,7 @@ button.main{background:var(--accent);border-color:var(--accent);color:#0c1a36;fl
   <div class="f"><input type="checkbox" data-s="cta" checked aria-label="Exibir selo"><input type="text" data-k="cta1" value="DIRETO COM" aria-label="Selo linha 1" style="max-width:130px"><input type="text" data-k="cta2" value="O PROPRIETÁRIO" aria-label="Selo linha 2"></div>
   <div class="f"><input type="checkbox" data-s="codigo" checked aria-label="Exibir código"><label for="k-codigo" style="width:auto">Código</label><input type="text" id="k-codigo" data-k="codigo" value="40803"></div>
  </fieldset>
- <div class="btns"><button class="main" id="dl">Baixar PNG 1080 × 1080</button></div>
+ <div class="btns sticky"><button class="main" id="dl">Baixar PNG 1080 × 1080</button></div>
  <div id="msg" role="status"></div>
 </div>
 </div>
@@ -179,7 +196,8 @@ const stage=$('#stage'), wrap=$('#wrap'), fit=$('#fit');
 let img=new Image(), photoURL='';
 
 let W=1080,H=1080;
-function scaleStage(){fit.style.maxWidth=Math.max(260,innerHeight*0.86*W/H)+'px';wrap.style.transform='scale('+(fit.clientWidth/W)+')'}
+const mob=matchMedia('(max-width:900px)');
+function scaleStage(){fit.style.maxWidth=Math.max(150,innerHeight*(mob.matches?0.36:0.86)*W/H)+'px';wrap.style.transform='scale('+(fit.clientWidth/W)+')'}
 addEventListener('resize',scaleStage);
 new ResizeObserver(scaleStage).observe(fit); scaleStage();
 
@@ -252,6 +270,10 @@ $('#dl').addEventListener('click',async()=>{
     wrap.style.transform=prev;
     const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
     const name='anuncio-'+(($('#k-codigo').value||'imovel').replace(/[^\w-]/g,''))+'-'+$('#fmt').value+'.png';
+    if(typeof claude==='undefined' && matchMedia('(pointer:coarse)').matches && navigator.canShare){
+      const file=new File([blob],name,{type:'image/png'});
+      if(navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file],title:name}); msg.textContent='Pronto.'; return }catch(e){ if(e&&e.name==='AbortError'){msg.textContent='';return} } }
+    }
     if(typeof claude==='undefined'){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.append(a); a.click(); a.remove(); msg.textContent='Pronto.'; return }
     let dls=null; try{ dls=await claude.use('downloads') }catch(e){}
     if(dls){
