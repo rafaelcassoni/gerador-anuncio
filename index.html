@@ -6,6 +6,7 @@
 <title>Gerador de anúncio – Compre do Dono</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root{--bg:#eef0f4;--surface:#fff;--ink:#14213d;--muted:#5b6578;--line:#d5dae3;--accent:#f4b631;--navy:#0b1f35;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -128,10 +129,25 @@ input[type=range]:disabled{opacity:.4}
 button{max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.25;text-align:center}
 .btns{min-width:0}
 .sws{max-width:100%}
+[hidden]{display:none!important}
+.tabs{display:flex;gap:8px;max-width:1500px;margin:0 auto;padding:14px 20px 0}
+.tabs button{flex:1;max-width:240px}
+.tabs button[aria-selected=true]{background:var(--accent);border-color:var(--accent);color:#0c1a36}
+@media (max-width:900px){.tabs{padding:12px 12px 0}}
+button:disabled{opacity:.5;cursor:not-allowed}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 10px}
+.thumbs button{width:64px;height:64px;min-height:0;padding:0;border-radius:8px;overflow:hidden;border:2px solid var(--line)}
+.thumbs button[aria-pressed=true]{border-color:var(--accent);outline:2px solid var(--ink)}
+.thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.wmcv{display:block;margin:0 auto;border-radius:10px;background:#000;max-width:100%}
+.wmempty{height:min(36vh,360px);min-height:140px;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;border:2px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px}
+#msg2{font-size:13px;color:var(--muted);margin-top:8px;min-height:18px;overflow-wrap:anywhere}
+.f input[type=file]{flex:1 1 140px;min-width:0;max-width:100%;font:inherit;font-size:13px}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="tabs" role="tablist"><button type="button" role="tab" id="tabGen" aria-selected="true">Capa do anúncio</button><button type="button" role="tab" id="tabWm" aria-selected="false">Marca d’água</button></div>
+<div class="app" id="tab-gen">
 <div class="preview"><div class="fit" id="fit"><div id="wrap">
 <div id="stage">
  <div id="photo"></div><div id="feather"></div>
@@ -209,6 +225,40 @@ button{max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.25
  </fieldset>
  <div class="btns sticky"><button class="main" id="dl">Baixar PNG 1080 × 1080</button></div>
  <div id="msg" role="status"></div>
+</div>
+</div>
+<div class="app" id="tab-wm" hidden>
+<div class="preview"><div class="wmempty" id="wmempty">Envie fotos para ver a prévia com a marca d’água.</div><canvas id="wmcv" class="wmcv" hidden></canvas></div>
+<div class="editor">
+ <h1>Marca d’água nas fotos</h1>
+ <p class="s">Aplique seu logotipo nas demais fotos do imóvel para dificultar que outras pessoas reaproveitem as imagens. As configurações valem para todas as fotos.</p>
+ <div class="f lockrow"><input type="checkbox" id="lock2"><label for="lock2">Bloquear barras de ajuste (evita mexer sem querer ao rolar)</label></div>
+ <fieldset><legend>Fotos</legend>
+  <div class="f"><label for="w-files">Enviar fotos</label><input id="w-files" type="file" accept="image/*" multiple></div>
+  <div class="thumbs" id="thumbs"></div>
+  <div class="btns"><button type="button" id="w-rm">Remover foto selecionada</button></div>
+ </fieldset>
+ <fieldset><legend>Logotipo</legend>
+  <div class="f"><label for="w-logo">Logotipo</label><select id="w-logo"><option value="def">Compre do Dono (padrão)</option><option value="custom">Enviar outro logotipo</option></select></div>
+  <div class="f" id="w-lrow" hidden><label for="w-lfile">Arquivo</label><input type="file" id="w-lfile" accept="image/png,image/webp"></div>
+  <p class="s" id="w-lnote" hidden style="margin:0 0 8px">Use um PNG com fundo transparente. Com fundo sólido, a marca aparece dentro de um retângulo.</p>
+  <div class="f"><label for="w-color">Cor</label><select id="w-color"><option value="orig">Original</option><option value="white">Branco</option><option value="dark">Escuro</option></select></div>
+ </fieldset>
+ <fieldset><legend>Posição e aparência</legend>
+  <div class="f"><label for="w-mode">Posição</label><select id="w-mode"><option value="mosaic">Mosaico diagonal (mais seguro)</option><option value="c">Centro</option><option value="br">Canto inferior direito</option><option value="bl">Canto inferior esquerdo</option><option value="tr">Canto superior direito</option><option value="tl">Canto superior esquerdo</option></select></div>
+  <div class="f"><label for="w-size">Tamanho <span id="v-size">24</span>%</label><input id="w-size" type="range" min="5" max="70" value="24"></div>
+  <div class="f"><label for="w-op">Opacidade <span id="v-op">30</span>%</label><input id="w-op" type="range" min="10" max="100" value="30"></div>
+  <div class="f" id="w-gaprow"><label for="w-gap">Espaço <span id="v-gap">60</span>%</label><input id="w-gap" type="range" min="0" max="250" value="60"></div>
+  <div class="f" id="w-angrow"><label for="w-ang">Ângulo <span id="v-ang">-30</span>°</label><input id="w-ang" type="range" min="-60" max="60" value="-30"></div>
+  <div class="f"><input type="checkbox" id="w-shadow" checked><label for="w-shadow">Sombra suave (ajuda a ler em fotos claras)</label></div>
+ </fieldset>
+ <fieldset><legend>Saída</legend>
+  <div class="f"><label for="w-out">Tamanho</label><select id="w-out"><option value="orig">Original (máx. 2048 px)</option><option value="1080x1080">Feed quadrado · 1080 × 1080</option><option value="1080x1350">Feed retrato · 1080 × 1350</option><option value="1080x1920">Story · 1080 × 1920</option></select></div>
+  <p class="s" style="margin:0 0 8px">Os formatos do Instagram recortam a foto no centro.</p>
+  <div class="f"><label for="w-fmt">Arquivo</label><select id="w-fmt"><option value="jpg">JPG (menor)</option><option value="png">PNG (maior)</option></select></div>
+ </fieldset>
+ <div class="btns sticky"><button class="main" id="w-dl" type="button">Baixar esta foto</button><button id="w-all" type="button">Baixar todas</button></div>
+ <div id="msg2" role="status"></div>
 </div>
 </div>
 <div id="ov"><img id="ovimg" alt="Anúncio exportado"><span>Segure ou clique com o botão direito na imagem para salvar.</span><button id="ovx">Fechar</button></div>
@@ -401,6 +451,113 @@ lk.addEventListener('change',setLock); setLock();
 applyTheme(ACC0,NAVY0);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(sync);
 sync();
+</script>
+<script>
+(function(){
+const WM={photos:[],sel:-1,def:null,custom:null,logo:null};
+const coarse=()=>matchMedia('(pointer:coarse)').matches;
+function makeDef(){return new Promise(res=>{const i=new Image();i.onload=()=>{
+  const c=document.createElement('canvas');c.width=i.naturalWidth;c.height=i.naturalHeight;
+  const x=c.getContext('2d');x.drawImage(i,0,0);const d=x.getImageData(0,0,c.width,c.height),p=d.data;
+  for(let k=0;k<p.length;k+=4){const r=p[k],g=p[k+1],b=p[k+2];
+    const gs=Math.min(1,Math.max(0,(r-b)/195)),w=Math.min(1,Math.max(0,(Math.min(r,g,b)-11)/244));
+    const tt=gs/(gs+Math.max(0,w-gs*0.18)+1e-6);
+    p[k]=Math.round(244*tt+255*(1-tt));p[k+1]=Math.round(182*tt+255*(1-tt));p[k+2]=Math.round(49*tt+255*(1-tt));
+    p[k+3]=Math.round(255*Math.max(gs,w));}
+  x.putImageData(d,0,0);res(c)};i.src=LOGO0})}
+async function loadLogo(){
+  const base=($('#w-logo').value==='custom'&&WM.custom)?WM.custom:WM.def; if(!base){WM.logo=null;return}
+  const m=$('#w-color').value,c=document.createElement('canvas');c.width=base.width;c.height=base.height;
+  const x=c.getContext('2d');x.drawImage(base,0,0);
+  if(m!=='orig'){x.globalCompositeOperation='source-in';x.fillStyle=m==='white'?'#ffffff':'#141a2a';x.fillRect(0,0,c.width,c.height)}
+  WM.logo=c}
+function outSize(img,full){
+  const o=$('#w-out').value;let w,h;
+  if(o==='orig'){const m=full?2048:1200,s=Math.min(1,m/Math.max(img.naturalWidth,img.naturalHeight));w=Math.round(img.naturalWidth*s);h=Math.round(img.naturalHeight*s)}
+  else{[w,h]=o.split('x').map(Number);if(!full){const s=1200/Math.max(w,h);if(s<1){w=Math.round(w*s);h=Math.round(h*s)}}}
+  return[w,h]}
+function renderWM(cv,img,full){
+  const[w,h]=outSize(img,full);cv.width=w;cv.height=h;const x=cv.getContext('2d');
+  const s=Math.max(w/img.naturalWidth,h/img.naturalHeight),dw=img.naturalWidth*s,dh=img.naturalHeight*s;
+  x.imageSmoothingQuality='high';x.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh);
+  const L=WM.logo;if(!L)return;
+  const tw=w*(+$('#w-size').value/100),th=tw*L.height/L.width,mode=$('#w-mode').value;
+  x.globalAlpha=$('#w-op').value/100;
+  if($('#w-shadow').checked){x.shadowColor='rgba(0,0,0,.5)';x.shadowBlur=Math.max(2,tw*0.03);x.shadowOffsetY=Math.max(1,tw*0.008)}
+  if(mode==='mosaic'){
+    const gap=$('#w-gap').value/100,ang=$('#w-ang').value*Math.PI/180,sx=tw*(1+gap),sy=th*(1+gap),R=Math.hypot(w,h)/2;
+    x.save();x.translate(w/2,h/2);x.rotate(ang);let row=0;
+    for(let yy=-R;yy<R+sy;yy+=sy,row++){const off=(row%2)?sx/2:0;for(let xx=-R-sx+off;xx<R+sx;xx+=sx)x.drawImage(L,xx,yy,tw,th)}
+    x.restore();
+  }else{
+    const m=Math.max(w,h)*0.03;
+    const px=mode==='c'?(w-tw)/2:(mode.endsWith('l')?m:w-tw-m),py=mode==='c'?(h-th)/2:(mode.startsWith('t')?m:h-th-m);
+    x.drawImage(L,px,py,tw,th)}
+  x.globalAlpha=1;x.shadowColor='transparent';x.shadowBlur=0;x.shadowOffsetY=0}
+function fitC(){
+  const cv=$('#wmcv');if(cv.hidden||!cv.width)return;
+  const avail=$('#tab-wm .preview').clientWidth;if(!avail)return;
+  const s=Math.min(avail/cv.width,vh*(mob.matches?0.36:0.78)/cv.height);
+  cv.style.width=(cv.width*s)+'px';cv.style.height=(cv.height*s)+'px'}
+let pend=false;
+function draw(){if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;
+  const p=WM.photos[WM.sel],cv=$('#wmcv');$('#wmempty').hidden=!!p;cv.hidden=!p;if(!p)return;
+  renderWM(cv,p.img,false);fitC()})}
+function labels(){['size','op','gap','ang'].forEach(k=>$('#v-'+k).textContent=$('#w-'+k).value)}
+function modeUI(){const m=$('#w-mode').value==='mosaic';$('#w-gaprow').hidden=!m;$('#w-angrow').hidden=!m}
+function thumbs(){
+  const t=$('#thumbs');t.innerHTML='';
+  WM.photos.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-pressed',String(i===WM.sel));b.setAttribute('aria-label','Foto '+(i+1));
+    const im=document.createElement('img');im.src=p.url;im.alt='';b.append(im);b.onclick=()=>{WM.sel=i;thumbs();draw()};t.append(b)});
+  const none=!WM.photos.length;$('#w-rm').disabled=none;$('#w-dl').disabled=none;$('#w-all').disabled=none}
+$('#w-files').onchange=e=>{
+  [...e.target.files].forEach(f=>{const url=URL.createObjectURL(f),im=new Image();
+    im.onload=()=>{WM.photos.push({name:(f.name.replace(/\.[^.]+$/,'')||'foto').replace(/[^\w-]+/g,'-'),img:im,url});WM.sel=WM.photos.length-1;thumbs();draw()};
+    im.onerror=()=>{$('#msg2').textContent='Não foi possível abrir '+f.name};im.src=url});
+  e.target.value=''};
+$('#w-rm').onclick=()=>{if(WM.sel<0)return;WM.photos.splice(WM.sel,1);WM.sel=Math.min(WM.sel,WM.photos.length-1);thumbs();draw()};
+$('#w-lfile').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();
+  im.onload=()=>{const k=Math.min(1,1200/im.naturalWidth),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*k));c.height=Math.max(1,Math.round(im.naturalHeight*k));
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);WM.custom=c;loadLogo().then(draw)};im.src=URL.createObjectURL(f)};
+$('#w-logo').onchange=()=>{const c=$('#w-logo').value==='custom';$('#w-lrow').hidden=!c;$('#w-lnote').hidden=!c;loadLogo().then(draw)};
+$('#w-color').onchange=()=>loadLogo().then(draw);
+$('#w-out').onchange=draw;
+$('#w-mode').onchange=()=>{const m=$('#w-mode').value==='mosaic';$('#w-size').value=m?24:30;$('#w-op').value=m?30:60;modeUI();labels();draw()};
+$('#tab-wm').addEventListener('input',e=>{if(e.target.matches('#w-size,#w-op,#w-gap,#w-ang,#w-shadow')){labels();draw()}});
+
+const ext=()=>$('#w-fmt').value==='png'?'png':'jpg';
+const blobOf=p=>new Promise(res=>{const c=document.createElement('canvas');renderWM(c,p.img,true);const png=$('#w-fmt').value==='png';c.toBlob(res,png?'image/png':'image/jpeg',.92)});
+async function saveFile(blob,name){
+  if(typeof claude==='undefined'){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.append(a);a.click();a.remove();return 'ok'}
+  let d=null;try{d=await claude.use('downloads')}catch(e){}
+  if(d){try{await d.save({filename:name,data:blob});return 'ok'}catch(e){if(e&&e.code==='declined')return 'declined'}}
+  $('#ovimg').src=URL.createObjectURL(blob);$('#ov').style.display='flex';return 'overlay'}
+async function deliver(items){
+  const msg=$('#msg2');
+  if(typeof claude==='undefined'&&coarse()&&navigator.canShare){
+    const files=items.map(i=>new File([i.blob],i.name,{type:i.blob.type}));
+    if(navigator.canShare({files})){try{await navigator.share({files});msg.textContent='Pronto.';return}catch(e){if(e&&e.name==='AbortError'){msg.textContent='';return}}}}
+  const say=r=>msg.textContent=r==='declined'?'Download cancelado.':(r==='ok'?'Pronto.':'');
+  if(items.length===1){say(await saveFile(items[0].blob,items[0].name));return}
+  if(window.JSZip){const z=new JSZip();items.forEach(i=>z.file(i.name,i.blob));const zb=await z.generateAsync({type:'blob'});say(await saveFile(zb,'fotos-com-marca-dagua.zip'));return}
+  for(const i of items){await saveFile(i.blob,i.name);await new Promise(r=>setTimeout(r,350))}msg.textContent='Pronto.'}
+const nameOf=(p,i)=>String(i+1).padStart(2,'0')+'-'+p.name+'-marca.'+ext();
+$('#w-dl').onclick=async()=>{const p=WM.photos[WM.sel];if(!p)return;$('#msg2').textContent='Gerando imagem…';
+  try{await deliver([{blob:await blobOf(p),name:nameOf(p,WM.sel)}])}catch(e){$('#msg2').textContent='Não foi possível gerar a imagem.'}};
+$('#w-all').onclick=async()=>{if(!WM.photos.length)return;$('#msg2').textContent='Gerando '+WM.photos.length+' imagens…';
+  try{const items=[];for(let i=0;i<WM.photos.length;i++)items.push({blob:await blobOf(WM.photos[i]),name:nameOf(WM.photos[i],i)});await deliver(items)}catch(e){$('#msg2').textContent='Não foi possível gerar as imagens.'}};
+
+const lk=$('#lock'),lk2=$('#lock2');lk2.checked=lk.checked;
+lk2.addEventListener('change',()=>{lk.checked=lk2.checked;$$('input[type=range]').forEach(r=>r.disabled=lk.checked)});
+lk.addEventListener('change',()=>{lk2.checked=lk.checked});
+function tab(w){const g=w==='gen';$('#tab-gen').hidden=!g;$('#tab-wm').hidden=g;
+  $('#tabGen').setAttribute('aria-selected',String(g));$('#tabWm').setAttribute('aria-selected',String(!g));
+  if(g)scaleStage();else{draw();fitC()}scrollTo(0,0)}
+$('#tabGen').onclick=()=>tab('gen');$('#tabWm').onclick=()=>tab('wm');
+new ResizeObserver(fitC).observe($('#tab-wm .preview'));addEventListener('resize',fitC);
+labels();modeUI();thumbs();
+makeDef().then(c=>{WM.def=c;return loadLogo()}).then(draw);
+})();
 </script>
 </body>
 </html>
