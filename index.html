@@ -237,21 +237,35 @@ button:disabled{opacity:.5;cursor:not-allowed}
  <fieldset><legend>Fotos</legend>
   <div class="f"><label for="w-files">Enviar fotos</label><input id="w-files" type="file" accept="image/*" multiple></div>
   <div class="thumbs" id="thumbs"></div>
+  <p class="s" style="margin:0 0 8px">Enquadramento e marca d’água valem para a foto selecionada. Cada foto pode ter o seu padrão.</p>
   <div class="btns"><button type="button" id="w-rm">Remover foto selecionada</button></div>
  </fieldset>
+ <fieldset><legend>Enquadramento da foto</legend>
+  <p class="s" style="margin:0 0 8px">Escolha qual parte da foto aparece no formato de saída. Com zoom abaixo de 100%, a foto fica menor que o quadro e as bordas são preenchidas. Vale para a foto selecionada.</p>
+  <div class="f"><label for="w-zoom">Zoom <span id="v-zoom">100</span>%</label><input id="w-zoom" type="range" min="20" max="300" value="100"></div>
+  <div class="f"><label for="w-px">Horizontal</label><input id="w-px" type="range" min="0" max="100" value="50"></div>
+  <div class="f"><label for="w-py">Vertical</label><input id="w-py" type="range" min="0" max="100" value="50"></div>
+  <div class="f"><label for="w-bg">Bordas</label><select id="w-bg"><option value="blur">Foto desfocada</option><option value="white">Branco</option><option value="black">Preto</option><option value="custom">Cor personalizada</option></select><input type="color" id="w-bgc" value="#ffffff" hidden aria-label="Cor das bordas"></div>
+  <div class="btns"><button type="button" id="w-fitall">Foto inteira (sem cortar)</button><button type="button" id="w-crreset">Centralizar</button><button type="button" id="w-applyall">Aplicar a todas as fotos</button></div>
+ </fieldset>
  <fieldset><legend>Logotipo</legend>
+  <div class="f"><input type="checkbox" id="w-on" checked><label for="w-on">Incluir marca d’água (logotipo) nesta foto</label></div>
   <div class="f"><label for="w-logo">Logotipo</label><select id="w-logo"><option value="def">Compre do Dono (padrão)</option><option value="custom">Enviar outro logotipo</option></select></div>
   <div class="f" id="w-lrow" hidden><label for="w-lfile">Arquivo</label><input type="file" id="w-lfile" accept="image/png,image/webp"></div>
   <p class="s" id="w-lnote" hidden style="margin:0 0 8px">Use um PNG com fundo transparente. Com fundo sólido, a marca aparece dentro de um retângulo.</p>
   <div class="f"><label for="w-color">Cor</label><select id="w-color"><option value="orig">Original</option><option value="white">Branco</option><option value="dark">Escuro</option></select></div>
  </fieldset>
- <fieldset><legend>Posição e aparência</legend>
-  <div class="f"><label for="w-mode">Posição</label><select id="w-mode"><option value="mosaic">Mosaico diagonal (mais seguro)</option><option value="c">Centro</option><option value="br">Canto inferior direito</option><option value="bl">Canto inferior esquerdo</option><option value="tr">Canto superior direito</option><option value="tl">Canto superior esquerdo</option></select></div>
+ <fieldset><legend>Posição e aparência (foto selecionada)</legend>
+  <div class="f"><label for="w-mode">Posição</label><select id="w-mode"><option value="mosaic">Mosaico diagonal (mais seguro)</option><option value="free">Livre (você escolhe)</option><option value="c">Centro</option><option value="br">Canto inferior direito</option><option value="bl">Canto inferior esquerdo</option><option value="tr">Canto superior direito</option><option value="tl">Canto superior esquerdo</option></select></div>
+  <div class="f" id="w-fxrow" hidden><label for="w-fx">Horizontal</label><input id="w-fx" type="range" min="0" max="100" value="85"></div>
+  <div class="f" id="w-fyrow" hidden><label for="w-fy">Vertical</label><input id="w-fy" type="range" min="0" max="100" value="88"></div>
+  <p class="s" id="w-fnote" hidden style="margin:0 0 8px">Arraste a marca na prévia ou use as barras. Para arrastar, desmarque a trava das barras de ajuste.</p>
   <div class="f"><label for="w-size">Tamanho <span id="v-size">24</span>%</label><input id="w-size" type="range" min="5" max="70" value="24"></div>
   <div class="f"><label for="w-op">Opacidade <span id="v-op">30</span>%</label><input id="w-op" type="range" min="10" max="100" value="30"></div>
   <div class="f" id="w-gaprow"><label for="w-gap">Espaço <span id="v-gap">60</span>%</label><input id="w-gap" type="range" min="0" max="250" value="60"></div>
   <div class="f" id="w-angrow"><label for="w-ang">Ângulo <span id="v-ang">-30</span>°</label><input id="w-ang" type="range" min="-60" max="60" value="-30"></div>
   <div class="f"><input type="checkbox" id="w-shadow" checked><label for="w-shadow">Sombra suave (ajuda a ler em fotos claras)</label></div>
+  <div class="btns"><button type="button" id="w-wmall">Aplicar esta marca a todas as fotos</button></div>
  </fieldset>
  <fieldset><legend>Saída</legend>
   <div class="f"><label for="w-out">Tamanho</label><select id="w-out"><option value="orig">Original (máx. 2048 px)</option><option value="1080x1080">Feed quadrado · 1080 × 1080</option><option value="1080x1350">Feed retrato · 1080 × 1350</option><option value="1080x1920">Story · 1080 × 1920</option></select></div>
@@ -456,7 +470,7 @@ sync();
 </script>
 <script>
 (function(){
-const WM={photos:[],sel:-1,def:null,custom:null,logo:null};
+const WM={photos:[],sel:-1,def:null,custom:null,cache:{}};
 const coarse=()=>matchMedia('(pointer:coarse)').matches;
 function makeDef(){return new Promise(res=>{const i=new Image();i.onload=()=>{
   const c=document.createElement('canvas');c.width=i.naturalWidth;c.height=i.naturalHeight;
@@ -467,33 +481,48 @@ function makeDef(){return new Promise(res=>{const i=new Image();i.onload=()=>{
     p[k]=Math.round(244*tt+255*(1-tt));p[k+1]=Math.round(182*tt+255*(1-tt));p[k+2]=Math.round(49*tt+255*(1-tt));
     p[k+3]=Math.round(255*Math.max(gs,w));}
   x.putImageData(d,0,0);res(c)};i.src=LOGO0})}
-async function loadLogo(){
-  const base=($('#w-logo').value==='custom'&&WM.custom)?WM.custom:WM.def; if(!base){WM.logo=null;return}
-  const m=$('#w-color').value,c=document.createElement('canvas');c.width=base.width;c.height=base.height;
-  const x=c.getContext('2d');x.drawImage(base,0,0);
-  if(m!=='orig'){x.globalCompositeOperation='source-in';x.fillStyle=m==='white'?'#ffffff':'#141a2a';x.fillRect(0,0,c.width,c.height)}
-  WM.logo=c}
+function logoFor(color){
+  if(WM.cache[color])return WM.cache[color];
+  const base=($('#w-logo').value==='custom'&&WM.custom)?WM.custom:WM.def;if(!base)return null;
+  const c=document.createElement('canvas');c.width=base.width;c.height=base.height;const x=c.getContext('2d');x.drawImage(base,0,0);
+  if(color!=='orig'){x.globalCompositeOperation='source-in';x.fillStyle=color==='white'?'#ffffff':'#141a2a';x.fillRect(0,0,c.width,c.height)}
+  return WM.cache[color]=c}
+function readWM(){return{on:$('#w-on').checked,mode:$('#w-mode').value,size:+$('#w-size').value,op:+$('#w-op').value,gap:+$('#w-gap').value,ang:+$('#w-ang').value,shadow:$('#w-shadow').checked,fx:+$('#w-fx').value,fy:+$('#w-fy').value,color:$('#w-color').value}}
+function writeWM(c){$('#w-on').checked=c.on;$('#w-mode').value=c.mode;$('#w-size').value=c.size;$('#w-op').value=c.op;$('#w-gap').value=c.gap;$('#w-ang').value=c.ang;$('#w-shadow').checked=c.shadow;$('#w-fx').value=c.fx;$('#w-fy').value=c.fy;$('#w-color').value=c.color}
 function outSize(img,full){
   const o=$('#w-out').value;let w,h;
   if(o==='orig'){const m=full?2048:1200,s=Math.min(1,m/Math.max(img.naturalWidth,img.naturalHeight));w=Math.round(img.naturalWidth*s);h=Math.round(img.naturalHeight*s)}
   else{[w,h]=o.split('x').map(Number);if(!full){const s=1200/Math.max(w,h);if(s<1){w=Math.round(w*s);h=Math.round(h*s)}}}
   return[w,h]}
-function renderWM(cv,img,full){
-  const[w,h]=outSize(img,full);cv.width=w;cv.height=h;const x=cv.getContext('2d');
-  const s=Math.max(w/img.naturalWidth,h/img.naturalHeight),dw=img.naturalWidth*s,dh=img.naturalHeight*s;
-  x.imageSmoothingQuality='high';x.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh);
-  const L=WM.logo;if(!L)return;
-  const tw=w*(+$('#w-size').value/100),th=tw*L.height/L.width,mode=$('#w-mode').value;
-  x.globalAlpha=$('#w-op').value/100;
-  if($('#w-shadow').checked){x.shadowColor='rgba(0,0,0,.5)';x.shadowBlur=Math.max(2,tw*0.03);x.shadowOffsetY=Math.max(1,tw*0.008)}
+function fillBg(x,img,w,h,cs){
+  const m=$('#w-bg').value;
+  if(m==='blur'){
+    const k=Math.max(8,Math.round(w/24)),kh=Math.max(8,Math.round(h/24)),a=document.createElement('canvas');a.width=k;a.height=kh;
+    const ax=a.getContext('2d');ax.imageSmoothingQuality='high';
+    const bw=img.naturalWidth*cs,bh=img.naturalHeight*cs;
+    ax.drawImage(img,(w-bw)/2*k/w,(h-bh)/2*kh/h,bw*k/w,bh*kh/h);
+    x.imageSmoothingQuality='high';x.drawImage(a,0,0,w,h);x.fillStyle='rgba(0,0,0,.18)';x.fillRect(0,0,w,h)
+  }else{x.fillStyle=m==='white'?'#ffffff':(m==='black'?'#000000':$('#w-bgc').value);x.fillRect(0,0,w,h)}
+}
+function renderWM(cv,p,full){
+  const img=p.img,c=p.wm,[w,h]=outSize(img,full);cv.width=w;cv.height=h;const x=cv.getContext('2d');
+  const cs=Math.max(w/img.naturalWidth,h/img.naturalHeight),s=cs*(p.z/100),dw=img.naturalWidth*s,dh=img.naturalHeight*s;
+  x.imageSmoothingQuality='high';
+  if(dw<w-0.5||dh<h-0.5)fillBg(x,img,w,h,cs);
+  x.drawImage(img,-(dw-w)*(p.px/100),-(dh-h)*(p.py/100),dw,dh);
+  const L=logoFor(c.color);if(!L||!c.on)return;
+  const tw=w*(c.size/100),th=tw*L.height/L.width,mode=c.mode;
+  x.globalAlpha=c.op/100;
+  if(c.shadow){x.shadowColor='rgba(0,0,0,.5)';x.shadowBlur=Math.max(2,tw*0.03);x.shadowOffsetY=Math.max(1,tw*0.008)}
   if(mode==='mosaic'){
-    const gap=$('#w-gap').value/100,ang=$('#w-ang').value*Math.PI/180,sx=tw*(1+gap),sy=th*(1+gap),R=Math.hypot(w,h)/2;
+    const gap=c.gap/100,ang=c.ang*Math.PI/180,sx=tw*(1+gap),sy=th*(1+gap),R=Math.hypot(w,h)/2;
     x.save();x.translate(w/2,h/2);x.rotate(ang);let row=0;
     for(let yy=-R;yy<R+sy;yy+=sy,row++){const off=(row%2)?sx/2:0;for(let xx=-R-sx+off;xx<R+sx;xx+=sx)x.drawImage(L,xx,yy,tw,th)}
     x.restore();
   }else{
-    const m=Math.max(w,h)*0.03;
-    const px=mode==='c'?(w-tw)/2:(mode.endsWith('l')?m:w-tw-m),py=mode==='c'?(h-th)/2:(mode.startsWith('t')?m:h-th-m);
+    const m=Math.max(w,h)*0.03,fr=mode==='free',
+      px=fr?(w-tw)*(c.fx/100):(mode==='c'?(w-tw)/2:(mode.endsWith('l')?m:w-tw-m)),
+      py=fr?(h-th)*(c.fy/100):(mode==='c'?(h-th)/2:(mode.startsWith('t')?m:h-th-m));
     x.drawImage(L,px,py,tw,th)}
   x.globalAlpha=1;x.shadowColor='transparent';x.shadowBlur=0;x.shadowOffsetY=0}
 function fitC(){
@@ -501,34 +530,47 @@ function fitC(){
   const avail=$('#tab-wm .preview').clientWidth;if(!avail)return;
   const s=Math.min(avail/cv.width,vh*(mob.matches?0.36:0.78)/cv.height);
   cv.style.width=(cv.width*s)+'px';cv.style.height=(cv.height*s)+'px'}
+function labels(){['zoom','size','op','gap','ang'].forEach(k=>$('#v-'+k).textContent=$('#w-'+k).value)}
+function dragUI(){const cv=$('#wmcv'),on=$('#w-mode').value==='free'&&!$('#lock').checked&&$('#w-on').checked;cv.style.touchAction=on?'none':'auto';cv.style.cursor=on?'move':'default'}
+function modeUI(){const m=$('#w-mode').value,f=m==='free';$('#w-gaprow').hidden=m!=='mosaic';$('#w-angrow').hidden=m!=='mosaic';$('#w-fxrow').hidden=!f;$('#w-fyrow').hidden=!f;$('#w-fnote').hidden=!f;dragUI()}
 let pend=false;
 function draw(){if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;
   const p=WM.photos[WM.sel],cv=$('#wmcv');$('#wmempty').hidden=!!p;cv.hidden=!p;if(!p)return;
-  renderWM(cv,p.img,false);fitC()})}
-function labels(){['size','op','gap','ang'].forEach(k=>$('#v-'+k).textContent=$('#w-'+k).value)}
-function modeUI(){const m=$('#w-mode').value==='mosaic';$('#w-gaprow').hidden=!m;$('#w-angrow').hidden=!m}
+  writeWM(p.wm);$('#w-zoom').value=p.z;$('#w-px').value=p.px;$('#w-py').value=p.py;labels();modeUI();
+  renderWM(cv,p,false);fitC()})}
 function thumbs(){
   const t=$('#thumbs');t.innerHTML='';
   WM.photos.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-pressed',String(i===WM.sel));b.setAttribute('aria-label','Foto '+(i+1));
     const im=document.createElement('img');im.src=p.url;im.alt='';b.append(im);b.onclick=()=>{WM.sel=i;thumbs();draw()};t.append(b)});
-  const none=!WM.photos.length;$('#w-rm').disabled=none;$('#w-dl').disabled=none;$('#w-all').disabled=none}
+  const none=!WM.photos.length;['w-rm','w-crreset','w-fitall','w-applyall','w-wmall','w-dl','w-all'].forEach(id=>$('#'+id).disabled=none)}
 $('#w-files').onchange=e=>{
   [...e.target.files].forEach(f=>{const url=URL.createObjectURL(f),im=new Image();
-    im.onload=()=>{WM.photos.push({name:(f.name.replace(/\.[^.]+$/,'')||'foto').replace(/[^\w-]+/g,'-'),img:im,url});WM.sel=WM.photos.length-1;thumbs();draw()};
+    im.onload=()=>{WM.photos.push({name:(f.name.replace(/\.[^.]+$/,'')||'foto').replace(/[^\w-]+/g,'-'),img:im,url,z:100,px:50,py:50,wm:readWM()});WM.sel=WM.photos.length-1;thumbs();draw()};
     im.onerror=()=>{$('#msg2').textContent='Não foi possível abrir '+f.name};im.src=url});
   e.target.value=''};
 $('#w-rm').onclick=()=>{if(WM.sel<0)return;WM.photos.splice(WM.sel,1);WM.sel=Math.min(WM.sel,WM.photos.length-1);thumbs();draw()};
 $('#w-lfile').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();
   im.onload=()=>{const k=Math.min(1,1200/im.naturalWidth),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*k));c.height=Math.max(1,Math.round(im.naturalHeight*k));
-    c.getContext('2d').drawImage(im,0,0,c.width,c.height);WM.custom=c;loadLogo().then(draw)};im.src=URL.createObjectURL(f)};
-$('#w-logo').onchange=()=>{const c=$('#w-logo').value==='custom';$('#w-lrow').hidden=!c;$('#w-lnote').hidden=!c;loadLogo().then(draw)};
-$('#w-color').onchange=()=>loadLogo().then(draw);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);WM.custom=c;WM.cache={};draw()};im.src=URL.createObjectURL(f)};
+$('#w-logo').onchange=()=>{const c=$('#w-logo').value==='custom';$('#w-lrow').hidden=!c;$('#w-lnote').hidden=!c;WM.cache={};draw()};
 $('#w-out').onchange=draw;
-$('#w-mode').onchange=()=>{const m=$('#w-mode').value==='mosaic';$('#w-size').value=m?24:30;$('#w-op').value=m?30:60;modeUI();labels();draw()};
-$('#tab-wm').addEventListener('input',e=>{if(e.target.matches('#w-size,#w-op,#w-gap,#w-ang,#w-shadow')){labels();draw()}});
+$('#w-bg').onchange=()=>{$('#w-bgc').hidden=$('#w-bg').value!=='custom';draw()};
+$('#w-bgc').oninput=draw;
+$('#w-fitall').onclick=()=>{const p=WM.photos[WM.sel];if(!p)return;const[w,h]=outSize(p.img,false),a=w/p.img.naturalWidth,b=h/p.img.naturalHeight;
+  p.z=Math.max(20,Math.min(300,Math.round(Math.min(a,b)/Math.max(a,b)*100)));p.px=50;p.py=50;draw()};
+$('#w-mode').onchange=()=>{const m=$('#w-mode').value==='mosaic';$('#w-size').value=m?24:30;$('#w-op').value=m?30:60;
+  const p=WM.photos[WM.sel];if(p)p.wm=readWM();modeUI();labels();draw()};
+$('#w-color').onchange=()=>{const p=WM.photos[WM.sel];if(p)p.wm=readWM();draw()};
+$('#tab-wm').addEventListener('input',e=>{
+  const p=WM.photos[WM.sel],id=e.target.id;
+  if(id==='w-zoom'||id==='w-px'||id==='w-py'){if(p){p.z=+$('#w-zoom').value;p.px=+$('#w-px').value;p.py=+$('#w-py').value}labels();draw();return}
+  if(['w-on','w-size','w-op','w-gap','w-ang','w-shadow','w-fx','w-fy'].includes(id)){if(p)p.wm=readWM();labels();dragUI();draw()}});
+$('#w-crreset').onclick=()=>{const p=WM.photos[WM.sel];if(!p)return;p.z=100;p.px=50;p.py=50;draw()};
+$('#w-applyall').onclick=()=>{const p=WM.photos[WM.sel];if(!p)return;WM.photos.forEach(q=>{q.z=p.z;q.px=p.px;q.py=p.py});$('#msg2').textContent='Enquadramento aplicado a todas as fotos.'};
+$('#w-wmall').onclick=()=>{const p=WM.photos[WM.sel];if(!p)return;WM.photos.forEach(q=>{q.wm=Object.assign({},p.wm)});$('#msg2').textContent='Marca d’água aplicada a todas as fotos.'};
 
 const ext=()=>$('#w-fmt').value==='png'?'png':'jpg';
-const blobOf=p=>new Promise(res=>{const c=document.createElement('canvas');renderWM(c,p.img,true);const png=$('#w-fmt').value==='png';c.toBlob(res,png?'image/png':'image/jpeg',.92)});
+const blobOf=p=>new Promise(res=>{const c=document.createElement('canvas');renderWM(c,p,true);const png=$('#w-fmt').value==='png';c.toBlob(res,png?'image/png':'image/jpeg',.92)});
 async function saveFile(blob,name){
   if(typeof claude==='undefined'){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.append(a);a.click();a.remove();return 'ok'}
   let d=null;try{d=await claude.use('downloads')}catch(e){}
@@ -550,15 +592,23 @@ $('#w-all').onclick=async()=>{if(!WM.photos.length)return;$('#msg2').textContent
   try{const items=[];for(let i=0;i<WM.photos.length;i++)items.push({blob:await blobOf(WM.photos[i]),name:nameOf(WM.photos[i],i)});await deliver(items)}catch(e){$('#msg2').textContent='Não foi possível gerar as imagens.'}};
 
 const lk=$('#lock'),lk2=$('#lock2');lk2.checked=lk.checked;
-lk2.addEventListener('change',()=>{lk.checked=lk2.checked;$$('input[type=range]').forEach(r=>r.disabled=lk.checked)});
-lk.addEventListener('change',()=>{lk2.checked=lk.checked});
+lk2.addEventListener('change',()=>{lk.checked=lk2.checked;$$('input[type=range]').forEach(r=>r.disabled=lk.checked);dragUI()});
+lk.addEventListener('change',()=>{lk2.checked=lk.checked;dragUI()});
+(function(){const cv=$('#wmcv');let drag=false;
+  function moveTo(e){const p=WM.photos[WM.sel];if(!p)return;const L=logoFor(p.wm.color);if(!L)return;
+    const r=cv.getBoundingClientRect(),w=cv.width,h=cv.height,tw=w*(p.wm.size/100),th=tw*L.height/L.width,
+    mx=(e.clientX-r.left)/r.width*w,my=(e.clientY-r.top)/r.height*h,cl=v=>Math.max(0,Math.min(100,Math.round(v)));
+    p.wm.fx=cl((mx-tw/2)/Math.max(1,w-tw)*100);p.wm.fy=cl((my-th/2)/Math.max(1,h-th)*100);draw()}
+  cv.addEventListener('pointerdown',e=>{if($('#w-mode').value!=='free'||lk.checked||!$('#w-on').checked)return;drag=true;try{cv.setPointerCapture(e.pointerId)}catch(_){}moveTo(e);e.preventDefault()});
+  cv.addEventListener('pointermove',e=>{if(drag)moveTo(e)});
+  ['pointerup','pointercancel'].forEach(ev=>cv.addEventListener(ev,()=>{drag=false}))})();
 function tab(w){const g=w==='gen';$('#tab-gen').hidden=!g;$('#tab-wm').hidden=g;
   $('#tabGen').setAttribute('aria-selected',String(g));$('#tabWm').setAttribute('aria-selected',String(!g));
   if(g)scaleStage();else{draw();fitC()}scrollTo(0,0)}
 $('#tabGen').onclick=()=>tab('gen');$('#tabWm').onclick=()=>tab('wm');
 new ResizeObserver(fitC).observe($('#tab-wm .preview'));addEventListener('resize',fitC);
 labels();modeUI();thumbs();
-makeDef().then(c=>{WM.def=c;return loadLogo()}).then(draw);
+makeDef().then(c=>{WM.def=c;WM.cache={};draw()});
 })();
 </script>
 </body>
